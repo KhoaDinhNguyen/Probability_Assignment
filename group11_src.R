@@ -231,23 +231,21 @@ ggplot(predicion, aes(x = TDP, y = TDP_Predcit)) +
   geom_point(shape=1, color="blue") +
   geom_abline(mapping=aes(intercept= 0, slope = 1), color="darkblue") + 
   labs(x = "TDP", y = "TDP Predicted")
-################################################################################
+
+################################## ANOVA #######################################
 anova <- aov(TDP ~ Litho, data = CPUs_data)
+summary(anova)
 plot(anova, which = 2)
 
-summary(two.way)
-
-
-plot(model, which = 1)
-plot(model, which = 3)
-
-#################################################################################
-
-###################################################################################
 tukey_res <- TukeyHSD(anova)
+print(tukey_res)
+
+# Extract the Tukey HSD results and prepare for plotting
 tukey_df <- as.data.frame(tukey_res$Litho)
 tukey_df$Comparison <- rownames(tukey_df)
+summary(tukey_df)
 
+# Create the Tukey HSD plot
 ggplot(tukey_df, aes(xmin = lwr, xmax = upr, y = Comparison)) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
   geom_errorbarh(aes(height = 0.2), color = "blue") +
