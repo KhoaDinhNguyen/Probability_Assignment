@@ -7,10 +7,13 @@ library(zoo)
 library(corrplot)
 library(readxl)
 library(DescTools)
+library(car)
 library(caret)
+
+pacman::p_load(pacman, magrittr, readr, dplyr, ggplot2, tidyr, zoo, corrplot, readxl, DescTools, car, caret)
 ###################################### READ FILE STEP ######################################
 # @function setw: set working directory (must change per computer)
-setwd("C:/Users/dinhk/desktop/Probability and Statistic/Rcode")
+setwd("C:/Users/dinhk/desktop/Probability and Statistic/Report")
 
 #read file
 CPU <- read.csv("Intel_CPUs.csv", na.string = c("","N/A"))
@@ -200,7 +203,7 @@ model <- lm(TDP ~ Litho + nCore + baseFreq + Cache + Temp, data = CPUs_data)
 summary(model)
 
 par(mfrow = c(1, 2))
-plot(model, which = 2)
+plot(model, which = 1)
 plot(model, which = 3)
 par(mfrow = c(1, 1))
 
@@ -238,12 +241,10 @@ summary(anova)
 plot(anova, which = 2)
 
 tukey_res <- TukeyHSD(anova)
-print(tukey_res)
 
 # Extract the Tukey HSD results and prepare for plotting
 tukey_df <- as.data.frame(tukey_res$Litho)
 tukey_df$Comparison <- rownames(tukey_df)
-summary(tukey_df)
 
 # Create the Tukey HSD plot
 ggplot(tukey_df, aes(xmin = lwr, xmax = upr, y = Comparison)) +
@@ -297,4 +298,3 @@ print(model)
 coefficients <- model$finalModel$coefficients
 
 print(coefficients)
-
