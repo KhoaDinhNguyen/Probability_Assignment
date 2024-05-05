@@ -7,7 +7,7 @@ library(zoo)
 library(corrplot)
 library(readxl)
 library(DescTools)
-
+library(caret)
 ###################################### READ FILE STEP ######################################
 # @function setw: set working directory (must change per computer)
 setwd("C:/Users/dinhk/desktop/Probability and Statistic/Rcode")
@@ -221,6 +221,16 @@ qqline(model$residuals, col = '#FF3333', lwd = 2, lty = "dashed")
 
 summary(model)
 
+# Create data frame for real tdp value and predicted tdp value (for Testing the test set)
+predicion <- CPUs_data['TDP']
+predicion['TDP_Predcit'] <- as.data.frame(predict(model, newdata = CPUs_data))
+
+# Plotting
+# The majority of points lie near the line, so its ok.
+ggplot(predicion, aes(x = TDP, y = TDP_Predcit)) +
+  geom_point(shape=1, color="blue") +
+  geom_abline(mapping=aes(intercept= 0, slope = 1), color="darkblue") + 
+  labs(x = "TDP", y = "TDP Predicted")
 ################################################################################
 anova <- aov(TDP ~ Litho, data = CPUs_data)
 plot(anova, which = 2)
@@ -233,17 +243,6 @@ plot(model, which = 3)
 
 #################################################################################
 
-# Create data frame for real tdp value and predicted tdp value (for Testing the test set)
-predicion <- CPUs_data['TDP']
-predicion['TDP_Predcit'] <- as.data.frame(predict(model, newdata = CPUs_data))
-
-# Plotting
-# The majority of points lie near the line, so its ok.
-ggplot(predicion, aes(x = TDP, y = TDP_Predcit)) +
-  geom_point(shape=1, color="blue") +
-  geom_abline(mapping=aes(intercept= 0, slope = 1), color="darkblue") + 
-  labs(x = "TDP", y = "TDP Predicted")
-
 ###################################################################################
 tukey_res <- TukeyHSD(anova)
 tukey_df <- as.data.frame(tukey_res$Litho)
@@ -255,3 +254,49 @@ ggplot(tukey_df, aes(xmin = lwr, xmax = upr, y = Comparison)) +
   geom_point(aes(x = diff), color = "black") +
   labs(title = "Tukey HSD Test Results", x = "Difference in Means", y = "Comparisons") +
   theme_minimal()
+
+############################# CROSS-VALIDATION #################################
+### 5 FOLD
+# Set the number of folds for cross-validation
+num_folds <- 5
+
+# Set the control parameters for cross-validation
+control <- trainControl(method = "cv", number = num_folds)
+
+# Train the linear regression model using cross-validation
+model <- train(TDP ~ .-TDP, data = CPUs_data, method = "lm", trControl = control)
+
+# Print the cross-validation results
+print(model)
+# Get the coefficients of the linear regression model
+coefficients <- model$finalModel$coefficients
+
+# Print the coefficients
+print(coefficients)
+
+### 10 FOLD
+num_folds <- 10
+
+control <- trainControl(method = "cv", number = num_folds)
+
+model <- train(TDP ~ .-TDP, data = CPUs_data, method = "lm", trControl = control)
+
+print(model)
+
+coefficients <- model$finalModel$coefficients
+
+print(coefficients)
+
+### 100 FOLD
+num_folds <- 100
+
+control <- trainControl(method = "cv", number = num_folds)
+
+model <- train(TDP ~ .-TDP, data = CPUs_data, method = "lm", trControl = control)
+
+print(model)
+
+coefficients <- model$finalModel$coefficients
+
+print(coefficients)
+
